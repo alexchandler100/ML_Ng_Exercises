@@ -64,12 +64,38 @@ Theta2_grad = zeros(size(Theta2));
 X=[ones(m,1) X];
 A=[ones(m,1) sigmoid(X*Theta1')];
 H = sigmoid(A*Theta2');
-Y=[y==1 y==2 y==3 y==4 y==5 y==6 y==7 y==8 y==9 y==10];
-J = sum(sum(-Y.*log(H) - (1-Y).*log(1-H)))/m
+Y=[y==1];
+for i=2:size(Theta2,1),
+  Y=[Y y==i];
+end
+%Y=[y==1 y==2 y==3 y==4 y==5 y==6 y==7 y==8 y==9 y==10];
+J = sum(sum(-Y.*log(H) - (1-Y).*log(1-H)))/m;
+J=J+(sum(sum(Theta1.^2))+ sum(sum(Theta2.^2))-sum(Theta1(:,1).^2)-sum(Theta2(:,1).^2))*lambda/(2*m);
 
+for t=1:m,
+  a_1 = X(t,:);
+  z_2 = a_1*Theta1';
+  a_2 = [1 sigmoid(z_2)];
+  z_3 = a_2*Theta2';
+  a_3 = sigmoid(z_3);
+  d_3 = a_3 - Y(t,:);
+  d_3 = d_3';
+  d_2 = (Theta2'*d_3).*sigmoidGradient([1;z_2']);
+  d_2 = d_2(2:end);
+  Theta2_grad = Theta2_grad + d_3*a_2;
+  Theta1_grad = Theta1_grad + d_2*a_1;
+end;
 
+Theta2_grad = Theta2_grad/m;
+Theta1_grad = Theta1_grad/m;
 
+reg_correction1 = lambda/m*Theta1;
+reg_correction1(:,1) = zeros(size(reg_correction1,1),1);
+reg_correction2 = lambda/m*Theta2;
+reg_correction2(:,1) = zeros(size(reg_correction2,1),1);
 
+Theta2_grad = Theta2_grad + reg_correction2;
+Theta1_grad = Theta1_grad + reg_correction1;
 
 
 
